@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>가상 직업인 인터뷰</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📒</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Gothic+A1:wght@400;500;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: 취재수첩 — 한 열의 노트 지면, 위에는 진행 단계 띠, 인터뷰는 말풍선 대신 '문답 기록' 형식 */
+:root{
+  --paper:#F5F6F9; --sheet:#FFFFFF; --ink:#1B2340; --muted:#5D6580; --line:#DADEEA;
+  --accent:#3346D3; --accent-ink:#FFFFFF; --mark:#FFE36E; --mark-ink:#1B2340;
+  --ok:#1F7A4D; --warn:#A35C00; --soft:#ECEEFB;
+  --f-display:"Do Hyeon","Gothic A1","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-body:"Gothic A1","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#11141D; --sheet:#191D29; --ink:#E6E9F3; --muted:#A1A8BF; --line:#2C3245;
+  --accent:#8E9CFF; --accent-ink:#0E1120; --mark:#5E5216; --mark-ink:#FFF3B8;
+  --ok:#5CC793; --warn:#F0A848; --soft:#23283A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#11141D; --sheet:#191D29; --ink:#E6E9F3; --muted:#A1A8BF; --line:#2C3245;
+  --accent:#8E9CFF; --accent-ink:#0E1120; --mark:#5E5216; --mark-ink:#FFF3B8;
+  --ok:#5CC793; --warn:#F0A848; --soft:#23283A; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.65;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+h1{font-family:var(--f-display);font-weight:400;font-size:2.1rem;line-height:1.15;margin:0;text-wrap:balance}
+h1 .hl{background:linear-gradient(transparent 55%,var(--mark) 55%);color:inherit;padding:0 2px}
+.sub{color:var(--muted);margin:4px 0 0;font-size:.95rem}
+h2{font-family:var(--f-display);font-weight:400;font-size:1.5rem;margin:0;text-wrap:balance}
+h3{font-size:1rem;margin:0}
+.tabs{display:flex;gap:6px}
+.tab{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:999px;padding:6px 14px;font:inherit;font-size:.9rem;cursor:pointer}
+.tab[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+ol.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;counter-reset:s}
+ol.steps li{counter-increment:s;border-top:3px solid var(--line);padding-top:6px;font-size:.85rem;color:var(--muted)}
+ol.steps li::before{content:counter(s) " ";font-family:var(--f-mono);font-size:.8rem}
+ol.steps li.on{border-color:var(--accent);color:var(--ink);font-weight:700}
+ol.steps li.done{border-color:var(--ink);color:var(--ink)}
+.sheet{background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:22px;display:flex;flex-direction:column;gap:16px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row>*{min-width:0}
+label{display:flex;flex-direction:column;gap:6px;font-size:.88rem;font-weight:700}
+label small{font-weight:400;color:var(--muted)}
+input,textarea{font:inherit;font-size:1rem;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%}
+textarea{resize:vertical;min-height:72px}
+input:focus,textarea:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px dashed var(--line);background:transparent;color:var(--ink);border-radius:999px;padding:4px 12px;font:inherit;font-size:.88rem;cursor:pointer}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{font:inherit;font-weight:700;border-radius:8px;padding:10px 18px;cursor:pointer;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn.quiet{background:transparent;border-color:var(--line);color:var(--muted);font-weight:500}
+.btn.sm{padding:4px 10px;font-size:.82rem}
+.btn.danger{background:var(--warn);border-color:var(--warn);color:var(--sheet)}
+.delcell{white-space:nowrap}
+.delcell .btn+.btn{margin-left:4px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.note{font-size:.88rem;color:var(--muted);margin:0}
+.notice{border-left:3px solid var(--warn);background:var(--soft);padding:10px 14px;border-radius:0 8px 8px 0;font-size:.9rem}
+.badge{display:inline-block;font-size:.75rem;letter-spacing:.04em;border:1px solid var(--line);border-radius:4px;padding:0 6px;color:var(--muted);font-weight:500}
+.persona{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:.92rem}
+.persona dt{color:var(--muted)}
+.persona dd{margin:0}
+.persona-card{border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.persona-name{font-family:var(--f-display);font-size:1.35rem}
+.qlist{display:flex;flex-direction:column;gap:10px}
+.qitem{display:grid;grid-template-columns:2.2rem 1fr;gap:8px;align-items:start}
+.qitem .n{font-family:var(--f-mono);color:var(--muted);padding-top:10px;font-size:.85rem}
+.qfb{font-size:.85rem;color:var(--muted);margin-top:4px}
+.qfb b{color:var(--ink)}
+.type{font-size:.75rem;border-radius:4px;padding:1px 6px;margin-right:6px;background:var(--mark);color:var(--mark-ink);font-weight:700}
+.legend{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:.85rem}
+.legend div{border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.legend b{display:block}
+/* 문답 기록 */
+.log{display:flex;flex-direction:column;gap:14px;max-height:56vh;overflow-y:auto;padding-right:4px}
+.turn{display:grid;grid-template-columns:2.4rem 1fr;gap:8px}
+.turn>div{min-width:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.who{font-family:var(--f-display);font-size:1.05rem;color:var(--muted);padding-top:1px}
+.turn.q .who{color:var(--accent)}
+.turn.q>div{font-weight:700}
+.turn.a>div{border-left:2px solid var(--line);padding-left:12px}
+.thinking{color:var(--muted);font-style:italic}
+.composer{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:14px}
+.composer-row{display:flex;gap:8px}
+.composer-row textarea{min-height:52px}
+.meter{display:flex;flex-wrap:wrap;gap:14px;font-size:.85rem;color:var(--muted)}
+.meter b{font-family:var(--f-mono);color:var(--ink)}
+.tip{font-size:.85rem;background:var(--soft);border-radius:8px;padding:8px 12px}
+.disclaimer{font-size:.8rem;color:var(--muted);text-align:center}
+.example{border:1px dashed var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px}
+/* 교사용 */
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+.tablebox{overflow-x:auto}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.8rem;color:var(--muted);font-weight:500;letter-spacing:.03em}
+td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+tr.rec{cursor:pointer}
+tr.rec:hover td{background:var(--soft)}
+.detail td{background:var(--paper)}
+.detail .log{max-height:none}
+.state-ok{color:var(--ok);font-weight:700}
+.state-run{color:var(--warn)}
+.acct{display:block;font-size:.78rem;color:var(--muted)}
+.resume-item{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:8px}
+@media (max-width:560px){
+  .row,.legend{grid-template-columns:1fr}
+  h1{font-size:1.7rem}
+  .sheet{padding:16px}
+  ol.steps li{font-size:.75rem}
+  .composer-row{flex-direction:column}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>가상 <span class="hl">직업인 인터뷰</span></h1>
+      <p class="sub">고1 진로 탐색 · 내가 궁금한 직업의 사람에게 직접 묻고 기록합니다</p>
+    </div>
+  </header>
+
+  <div id="student-view" class="wrap" style="gap:16px">
+    <ol class="steps" id="steps">
+      <li class="on">직업 정하기</li><li>질문 준비</li><li>인터뷰</li><li>돌아보기</li>
+    </ol>
+
+    <div class="notice" id="ai-off" hidden>AI 직업인을 불러오지 못했습니다. 잠시 뒤 다시 시도하고, 계속 안 되면 선생님께 알려 주세요.</div>
+    <div class="notice" id="save-off" hidden>기록 저장소에 연결하지 못해 선생님께 자동으로 제출되지 않습니다. 인터뷰는 그대로 할 수 있으니, 마친 뒤 '기록 전체 복사'로 복사해 제출하세요.</div>
+
+    <!-- 1. 직업 정하기 -->
+    <section class="sheet" id="s-setup">
+      <div class="notice" id="resume" hidden style="display:flex;flex-direction:column;gap:8px"><b>하던 인터뷰가 있어요</b><div id="resume-list" style="display:flex;flex-direction:column;gap:8px"></div></div>
+      <h2>누구를 인터뷰할까요?</h2>
+      <label for="class-code" id="code-wrap" hidden>수업 코드 <small>선생님이 알려 준 코드를 적어 주세요</small><input id="class-code" maxlength="30" autocomplete="off"></label>
+      <div class="row">
+        <label for="stu-no">학번 <small>예: 10312</small><input id="stu-no" inputmode="numeric" maxlength="8" placeholder="10312"></label>
+        <label for="stu-name">이름 또는 닉네임<input id="stu-name" maxlength="20" placeholder="홍길동"></label>
+      </div>
+      <label for="job">희망 직업 <small>되고 싶거나 궁금한 직업을 구체적으로 적어 보세요</small>
+        <input id="job" maxlength="40" placeholder="예: 응급실 간호사, 게임 기획자, 초등학교 교사">
+      </label>
+      <div class="chips" id="job-chips"></div>
+      <label for="reason">이 직업이 궁금한 이유 <small>한두 문장이면 충분해요. 인물 설정에 반영됩니다</small>
+        <textarea id="reason" maxlength="300" placeholder="예: 드라마에서 응급실 장면을 보고, 실제로는 어떤지 궁금해졌다."></textarea>
+      </label>
+      <div class="actions">
+        <button class="btn" id="make-persona">직업인 만나기</button>
+        <span class="note" id="setup-msg"></span>
+      </div>
+      <div class="notice" id="job-check" hidden><p style="margin:0 0 8px" id="job-check-msg"></p><div class="chips" id="job-alt"></div></div>
+      <p class="note">학번·이름 외의 개인정보(연락처, 주소, 학교명 등)는 어디에도 쓰지 마세요.</p>
+
+      <div class="example" aria-label="예시">
+        <span class="badge">예시</span>
+        <div class="turn q"><span class="who">나</span><div>간호사가 되고 나서 가장 힘들었던 날은 언제였나요?</div></div>
+        <div class="turn a"><span class="who">답</span><div>신규 때 처음 혼자 밤 근무를 섰던 날이에요. 환자 세 분이 한꺼번에 상태가 나빠졌는데, 선배를 부르는 것도 망설여졌죠. 그날 이후로 "모르면 바로 묻는 것"도 실력이라는 걸 배웠어요.</div></div>
+        <div class="turn q"><span class="who">나</span><div>그때 선배에게 묻기 망설여진 이유는 뭐였어요?</div></div>
+        <p class="note">답변 속 말을 붙잡아 다시 묻는 것, 이게 꼬리 질문입니다.</p>
+      </div>
+    </section>
+
+    <!-- 2. 질문 준비 -->
+    <section class="sheet" id="s-prep" hidden>
+      <div class="persona-card" id="persona-card"></div>
+      <h2>인터뷰 전에 질문을 준비하세요</h2>
+      <div class="legend">
+        <div><b>사실</b>하는 일, 준비 과정, 근무 조건</div>
+        <div><b>경험</b>힘들었던 일, 보람, 실수와 배움</div>
+        <div><b>생각·가치</b>고민, 딜레마, 직업의 미래</div>
+      </div>
+      <p class="note">세 종류를 골고루 섞으면 인터뷰가 깊어집니다. 최소 3개를 적어 주세요.</p>
+      <div class="qlist" id="qlist"></div>
+      <div class="actions">
+        <button class="btn ghost" id="add-q">질문 칸 추가</button>
+        <button class="btn ghost" id="check-q">질문 점검받기</button>
+        <button class="btn" id="start-interview">인터뷰 시작</button>
+        <span class="note" id="prep-msg"></span>
+      </div>
+    </section>
+
+    <!-- 3. 인터뷰 -->
+    <section class="sheet" id="s-chat" hidden>
+      <div class="actions" style="justify-content:space-between">
+        <div><h2 id="chat-title">인터뷰</h2><p class="note" id="chat-sub"></p></div>
+        <span class="badge">AI가 연기하는 가상 인물</span>
+      </div>
+      <div class="log" id="log" aria-live="polite"></div>
+      <div class="composer">
+        <div class="meter">
+          <span>질문 <b id="m-q">0</b>개</span>
+          <span>준비한 질문 사용 <b id="m-prep">0</b>/<b id="m-prep-total">0</b></span>
+          <span id="save-state"></span>
+        </div>
+        <div class="chips" id="prep-chips"></div>
+        <div class="tip" id="tip"></div>
+        <div class="composer-row">
+          <label for="ask" style="flex:1"><span class="badge" style="align-self:flex-start">내 질문</span>
+            <textarea id="ask" maxlength="400" placeholder="질문을 쓰고 Enter (줄바꿈은 Shift+Enter)"></textarea></label>
+        </div>
+        <div class="actions">
+          <button class="btn" id="send">묻기</button>
+          <button class="btn quiet" id="stop" hidden>멈추기</button>
+          <button class="btn ghost" id="finish" disabled>인터뷰 마치기</button>
+          <span class="note" id="finish-note">질문을 5개 이상 하면 마칠 수 있어요.</span>
+        </div>
+      </div>
+      <p class="disclaimer">이 직업인은 AI가 연기하는 가상 인물입니다. 연봉이나 경쟁률 같은 수치는 해마다 바뀌는 대략적인 값입니다.</p>
+    </section>
+
+    <!-- 4. 돌아보기 -->
+    <section class="sheet" id="s-reflect" hidden>
+      <h2>인터뷰를 돌아봅니다</h2>
+      <label for="r-learned">새로 알게 된 점<textarea id="r-learned" maxlength="600"></textarea></label>
+      <label for="r-surprised">내 예상과 달랐던 점<textarea id="r-surprised" maxlength="600"></textarea></label>
+      <label for="r-next">더 알아보고 싶은 것과 확인할 방법 <small>예: 간호대 입시 요건 → 커리어넷 학과정보에서 확인</small><textarea id="r-next" maxlength="600"></textarea></label>
+      <div class="actions">
+        <button class="btn" id="submit-reflect">제출하기</button>
+        <button class="btn ghost" id="copy-record">기록 전체 복사</button>
+        <button class="btn quiet" id="back-chat">인터뷰로 돌아가기</button>
+        <button class="btn quiet" id="restart">다른 직업 인터뷰하기</button>
+        <span class="note" id="reflect-msg"></span>
+      </div>
+      <p class="note">더 찾아보기: <a href="https://www.career.go.kr" target="_blank" rel="noopener">커리어넷</a> · <a href="https://www.work24.go.kr" target="_blank" rel="noopener">고용24(워크넷)</a></p>
+    </section>
+  </div>
+</div>
+<script type="module" src="./student.js"></script>
+</body>
+</html>

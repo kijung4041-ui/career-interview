@@ -1,0 +1,16 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ▼ 교사 로그인 이메일로 바꾸세요 (Authentication에 등록한 이메일과 똑같이)
+    function isTeacher() {
+      return request.auth != null && request.auth.token.email == "teacher@example.com";
+    }
+
+    // 학생 한 명당 문서 하나: 학생은 자기 문서만 읽고 쓸 수 있고, 교사는 전체를 보고 지울 수 있습니다.
+    match /interviews/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+      allow read, update, delete: if isTeacher();
+    }
+  }
+}

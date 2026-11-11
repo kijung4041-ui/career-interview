@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>직업인 인터뷰 · 교사용</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗂️</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Gothic+A1:wght@400;500;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: 취재수첩 — 한 열의 노트 지면, 위에는 진행 단계 띠, 인터뷰는 말풍선 대신 '문답 기록' 형식 */
+:root{
+  --paper:#F5F6F9; --sheet:#FFFFFF; --ink:#1B2340; --muted:#5D6580; --line:#DADEEA;
+  --accent:#3346D3; --accent-ink:#FFFFFF; --mark:#FFE36E; --mark-ink:#1B2340;
+  --ok:#1F7A4D; --warn:#A35C00; --soft:#ECEEFB;
+  --f-display:"Do Hyeon","Gothic A1","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-body:"Gothic A1","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#11141D; --sheet:#191D29; --ink:#E6E9F3; --muted:#A1A8BF; --line:#2C3245;
+  --accent:#8E9CFF; --accent-ink:#0E1120; --mark:#5E5216; --mark-ink:#FFF3B8;
+  --ok:#5CC793; --warn:#F0A848; --soft:#23283A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#11141D; --sheet:#191D29; --ink:#E6E9F3; --muted:#A1A8BF; --line:#2C3245;
+  --accent:#8E9CFF; --accent-ink:#0E1120; --mark:#5E5216; --mark-ink:#FFF3B8;
+  --ok:#5CC793; --warn:#F0A848; --soft:#23283A; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.65;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+h1{font-family:var(--f-display);font-weight:400;font-size:2.1rem;line-height:1.15;margin:0;text-wrap:balance}
+h1 .hl{background:linear-gradient(transparent 55%,var(--mark) 55%);color:inherit;padding:0 2px}
+.sub{color:var(--muted);margin:4px 0 0;font-size:.95rem}
+h2{font-family:var(--f-display);font-weight:400;font-size:1.5rem;margin:0;text-wrap:balance}
+h3{font-size:1rem;margin:0}
+.tabs{display:flex;gap:6px}
+.tab{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:999px;padding:6px 14px;font:inherit;font-size:.9rem;cursor:pointer}
+.tab[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+ol.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;counter-reset:s}
+ol.steps li{counter-increment:s;border-top:3px solid var(--line);padding-top:6px;font-size:.85rem;color:var(--muted)}
+ol.steps li::before{content:counter(s) " ";font-family:var(--f-mono);font-size:.8rem}
+ol.steps li.on{border-color:var(--accent);color:var(--ink);font-weight:700}
+ol.steps li.done{border-color:var(--ink);color:var(--ink)}
+.sheet{background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:22px;display:flex;flex-direction:column;gap:16px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row>*{min-width:0}
+label{display:flex;flex-direction:column;gap:6px;font-size:.88rem;font-weight:700}
+label small{font-weight:400;color:var(--muted)}
+input,textarea{font:inherit;font-size:1rem;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%}
+textarea{resize:vertical;min-height:72px}
+input:focus,textarea:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px dashed var(--line);background:transparent;color:var(--ink);border-radius:999px;padding:4px 12px;font:inherit;font-size:.88rem;cursor:pointer}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{font:inherit;font-weight:700;border-radius:8px;padding:10px 18px;cursor:pointer;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn.quiet{background:transparent;border-color:var(--line);color:var(--muted);font-weight:500}
+.btn.sm{padding:4px 10px;font-size:.82rem}
+.btn.danger{background:var(--warn);border-color:var(--warn);color:var(--sheet)}
+.delcell{white-space:nowrap}
+.delcell .btn+.btn{margin-left:4px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.note{font-size:.88rem;color:var(--muted);margin:0}
+.notice{border-left:3px solid var(--warn);background:var(--soft);padding:10px 14px;border-radius:0 8px 8px 0;font-size:.9rem}
+.badge{display:inline-block;font-size:.75rem;letter-spacing:.04em;border:1px solid var(--line);border-radius:4px;padding:0 6px;color:var(--muted);font-weight:500}
+.persona{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:.92rem}
+.persona dt{color:var(--muted)}
+.persona dd{margin:0}
+.persona-card{border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.persona-name{font-family:var(--f-display);font-size:1.35rem}
+.qlist{display:flex;flex-direction:column;gap:10px}
+.qitem{display:grid;grid-template-columns:2.2rem 1fr;gap:8px;align-items:start}
+.qitem .n{font-family:var(--f-mono);color:var(--muted);padding-top:10px;font-size:.85rem}
+.qfb{font-size:.85rem;color:var(--muted);margin-top:4px}
+.qfb b{color:var(--ink)}
+.type{font-size:.75rem;border-radius:4px;padding:1px 6px;margin-right:6px;background:var(--mark);color:var(--mark-ink);font-weight:700}
+.legend{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:.85rem}
+.legend div{border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.legend b{display:block}
+/* 문답 기록 */
+.log{display:flex;flex-direction:column;gap:14px;max-height:56vh;overflow-y:auto;padding-right:4px}
+.turn{display:grid;grid-template-columns:2.4rem 1fr;gap:8px}
+.turn>div{min-width:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.who{font-family:var(--f-display);font-size:1.05rem;color:var(--muted);padding-top:1px}
+.turn.q .who{color:var(--accent)}
+.turn.q>div{font-weight:700}
+.turn.a>div{border-left:2px solid var(--line);padding-left:12px}
+.thinking{color:var(--muted);font-style:italic}
+.composer{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:14px}
+.composer-row{display:flex;gap:8px}
+.composer-row textarea{min-height:52px}
+.meter{display:flex;flex-wrap:wrap;gap:14px;font-size:.85rem;color:var(--muted)}
+.meter b{font-family:var(--f-mono);color:var(--ink)}
+.tip{font-size:.85rem;background:var(--soft);border-radius:8px;padding:8px 12px}
+.disclaimer{font-size:.8rem;color:var(--muted);text-align:center}
+.example{border:1px dashed var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px}
+/* 교사용 */
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+.tablebox{overflow-x:auto}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.8rem;color:var(--muted);font-weight:500;letter-spacing:.03em}
+td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+tr.rec{cursor:pointer}
+tr.rec:hover td{background:var(--soft)}
+.detail td{background:var(--paper)}
+.detail .log{max-height:none}
+.state-ok{color:var(--ok);font-weight:700}
+.state-run{color:var(--warn)}
+.acct{display:block;font-size:.78rem;color:var(--muted)}
+.resume-item{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:8px}
+@media (max-width:560px){
+  .row,.legend{grid-template-columns:1fr}
+  h1{font-size:1.7rem}
+  .sheet{padding:16px}
+  ol.steps li{font-size:.75rem}
+  .composer-row{flex-direction:column}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+.wrap.wide{max-width:1040px}
+.login{max-width:420px}
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.filters label{min-width:140px}
+select{font:inherit;font-size:1rem;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:9px 10px}
+.stats{display:flex;flex-wrap:wrap;gap:18px;font-size:.9rem;color:var(--muted)}
+#teacher-view table{min-width:640px}
+tr.rec td,thead th{white-space:nowrap}
+.stats b{font-family:var(--f-mono);color:var(--ink);font-size:1.05rem}
+</style>
+</head>
+<body>
+<div class="wrap wide">
+  <header>
+    <div>
+      <h1>직업인 인터뷰 <span class="hl">교사용</span></h1>
+      <p class="sub">학생 인터뷰 기록 확인과 엑셀 내려받기</p>
+    </div>
+    <button class="btn quiet" id="logout" hidden>로그아웃</button>
+  </header>
+
+  <section class="sheet login" id="login-view">
+    <h2>교사 로그인</h2>
+    <label for="email">이메일<input id="email" type="email" autocomplete="username"></label>
+    <label for="pw">비밀번호<input id="pw" type="password" autocomplete="current-password"></label>
+    <div class="actions"><button class="btn" id="login">로그인</button><span class="note" id="login-msg"></span></div>
+    <p class="note">Firebase Authentication에 등록한 교사 계정으로 로그인하세요.</p>
+  </section>
+
+  <section class="sheet" id="teacher-view" hidden>
+    <div class="filters">
+      <label for="f-class">반<select id="f-class"><option value="">전체</option></select></label>
+      <label for="f-state">상태<select id="f-state"><option value="">전체</option><option value="done">제출</option><option value="run">진행 중</option></select></label>
+      <label for="f-q" style="flex:1;min-width:180px">검색 <small>학번, 이름, 직업</small><input id="f-q" placeholder="예: 10312, 간호사"></label>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="actions">
+      <button class="btn" id="xlsx">엑셀로 내려받기</button>
+      <button class="btn ghost" id="copy-all">보이는 기록 복사</button>
+      <span class="note" id="t-msg"></span>
+    </div>
+    <p class="note" id="t-status">기록을 불러오는 중입니다.</p>
+    <div class="tablebox">
+      <table>
+        <thead><tr><th>학번</th><th>이름</th><th>직업</th><th>질문</th><th>상태</th><th>마지막 기록</th><th></th></tr></thead>
+        <tbody id="t-body"></tbody>
+      </table>
+    </div>
+    <p class="note">행을 누르면 문답 전체와 돌아보기 내용이 펼쳐집니다. 엑셀과 복사는 지금 걸러진 기록만 담습니다.</p>
+  </section>
+</div>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script type="module" src="./admin.js"></script>
+</body>
+</html>
