@@ -16,12 +16,15 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 /* ---------- 로그인 ---------- */
+// 아이디만 입력하면 뒤에 붙여서 Firebase 로그인용 주소로 만듭니다. (실제 메일 주소가 아니어도 됩니다)
+const ID_DOMAIN = "@example.com";
 $("login").onclick = async () => {
-  const email = $("email").value.trim(), pw = $("pw").value;
-  if (!email || !pw) { $("login-msg").textContent = "이메일과 비밀번호를 적어 주세요."; return; }
+  const id = $("email").value.trim().toLowerCase(), pw = $("pw").value;
+  if (!id || !pw) { $("login-msg").textContent = "아이디와 비밀번호를 적어 주세요."; return; }
+  const email = id.includes("@") ? id : id + ID_DOMAIN;
   $("login").disabled = true; $("login-msg").textContent = "로그인 중…";
   try { await signInWithEmailAndPassword(auth, email, pw); $("login-msg").textContent = ""; }
-  catch (e) { $("login-msg").textContent = /invalid|wrong|user-not-found|credential/i.test(e.code || "") ? "이메일이나 비밀번호가 맞지 않습니다." : "로그인하지 못했습니다. 잠시 뒤 다시 시도해 주세요."; }
+  catch (e) { $("login-msg").textContent = /invalid|wrong|user-not-found|credential/i.test(e.code || "") ? "아이디나 비밀번호가 맞지 않습니다." : "로그인하지 못했습니다. 잠시 뒤 다시 시도해 주세요."; }
   finally { $("login").disabled = false; }
 };
 $("pw").addEventListener("keydown", e => { if (e.key === "Enter") $("login").click(); });
@@ -39,7 +42,7 @@ onAuthStateChanged(auth, user => {
     refreshClassOptions(); renderTeacher();
   }, err => {
     console.error(err);
-    $("t-status").textContent = err.code === "permission-denied" ? "이 계정에는 기록을 볼 권한이 없습니다. Firestore 보안 규칙의 교사 이메일을 확인해 주세요." : "기록을 불러오지 못했습니다. 새로고침해 주세요.";
+    $("t-status").textContent = err.code === "permission-denied" ? "이 계정에는 기록을 볼 권한이 없습니다. Firestore 보안 규칙의 교사 아이디를 확인해 주세요." : "기록을 불러오지 못했습니다. 새로고침해 주세요.";
   });
 });
 
