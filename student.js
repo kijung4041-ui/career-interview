@@ -227,7 +227,11 @@ async function send(){
     cur.turns.push({ role: "assistant", content: ans, t: Date.now() });
     nextTip();
   } catch (e) {
-    if (e && e.text && e.code !== "refused") cur.turns.push({ role: "assistant", content: e.text + " …(중단됨)", t: Date.now() });
+    if (e && e.code === "refused") {
+      // Gemini가 답을 막았을 때: 오류 대신 인물의 말로 자연스럽게 넘깁니다.
+      cur.turns.push({ role: "assistant", content: "음, 그 얘기는 제가 답하기가 좀 어렵네요. 대신 일 얘기라면 뭐든 괜찮아요. 다른 거 물어봐 줄래요?", t: Date.now(), blocked: true });
+    }
+    else if (e && e.text) cur.turns.push({ role: "assistant", content: e.text + " …(중단됨)", t: Date.now() });
     else { const t0 = cur.turns.pop(); $("ask").value = text; pendingPrep = t0 && t0.prep || null; if (!e || e.code !== "cancelled") $("tip").textContent = aiError(e); }
   } finally {
     busy = false; $("send").disabled = false; $("stop").hidden = true;
@@ -293,7 +297,7 @@ function save(){
       if (curCopy) sessions.push(curCopy);
       await setDoc(ref, { student, sessions, updatedAt: new Date().toISOString() });
       $("save-state").textContent = "자동 저장됨"; return true; })
-    .catch((e) => { console.error(e); $("save-state").textContent = "저장 실패 · 마칠 때 기록을 복사하세요"; return false; });
+    .catch((e) => { console.error("저장 실패:", e && e.code, e); $("save-state").textContent = (e && e.code === "permission-denied") ? "저장 권한 오류 · 새로고침 후 다시 시도하거나 기록을 복사하세요" : "저장 실패 · 마칠 때 기록을 복사하세요"; return false; });
   return chain;
 }
 
@@ -324,7 +328,8 @@ function resumeSession(id){
 /* ---------- 시작 ---------- */
 (async () => {
   try {
-    const app = initializeApp(firebaseConfig);
+    // 학생용은 교사용과 로그인 상태를 따로 씁니다. (같은 브라우저에서 교사가 로그인·로그아웃해도 학생 저장이 끊기지 않게)
+    const app = initializeApp(firebaseConfig, "student");
     const auth = getAuth(app);
     db = getFirestore(app);
     const user = await new Promise(resolve => { const off = onAuthStateChanged(auth, u => { off(); resolve(u); }); });
