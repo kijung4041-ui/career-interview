@@ -252,7 +252,7 @@ $("submit-reflect").onclick = async () => {
   cur.reflection = r; cur.finished = true; cur.updatedAt = new Date().toISOString();
   const ok = await save();
   $("back-chat").hidden = true; resetRestart();
-  $("reflect-msg").textContent = ok ? "제출했습니다. 선생님이 기록을 볼 수 있어요." : "제출하지 못했습니다. '기록 전체 복사'로 복사해 선생님께 제출해 주세요.";
+  $("reflect-msg").textContent = ok ? "제출했습니다. 선생님이 기록을 볼 수 있어요." : "제출하지 못했습니다. 잠시 뒤 '제출하기'를 한 번 더 눌러 보고, 그래도 안 되면 '기록 전체 복사'로 선생님께 보내 주세요.";
 };
 function recordText(stu, s){
   const lines = [`[가상 직업인 인터뷰] ${stu.no || ""} ${stu.name || ""}`, `직업: ${s.job}  /  인물: ${s.persona.name} (${s.persona.role || ""})`, `궁금한 이유: ${s.reason || "-"}`, "", "■ 준비한 질문"];
@@ -285,19 +285,34 @@ $("restart").onclick = () => {
 
 /* ---------- 저장 (Firestore) ---------- */
 let chain = Promise.resolve(true);
+async function writeOnce(curCopy, student){
+  const ref = doc(db, "interviews", uid);
+  const snap = await getDoc(ref);
+  const remote = snap.exists() && Array.isArray(snap.data().sessions) ? snap.data().sessions : [];
+  const sessions = remote.filter(x => !curCopy || x.id !== curCopy.id).map(clone);
+  if (curCopy) sessions.push(curCopy);
+  await setDoc(ref, { student, sessions, updatedAt: new Date().toISOString() });
+}
 function save(){
-  if (!db || !uid) { $("save-state").textContent = "자동 제출 안 됨 · 마칠 때 기록을 복사하세요"; return Promise.resolve(false); }
   const curCopy = cur ? clone(cur) : null;
   const student = clone(stuDoc.student || {});
   chain = chain.then(async () => {
-      const ref = doc(db, "interviews", uid);
-      const snap = await getDoc(ref);
-      const remote = snap.exists() && Array.isArray(snap.data().sessions) ? snap.data().sessions : [];
-      const sessions = remote.filter(x => !curCopy || x.id !== curCopy.id).map(clone);
-      if (curCopy) sessions.push(curCopy);
-      await setDoc(ref, { student, sessions, updatedAt: new Date().toISOString() });
-      $("save-state").textContent = "자동 저장됨"; return true; })
-    .catch((e) => { console.error("저장 실패:", e && e.code, e); $("save-state").textContent = (e && e.code === "permission-denied") ? "저장 권한 오류 · 새로고침 후 다시 시도하거나 기록을 복사하세요" : "저장 실패 · 마칠 때 기록을 복사하세요"; return false; });
+    // 연결이 안 되어 있으면 한 번 다시 연결해 봅니다.
+    if ((!db || !uid) && !(await connect())) throw { code: "no-connection" };
+    try { await writeOnce(curCopy, student); }
+    catch (e) {
+      // 잠깐 끊긴 경우를 위해 1.5초 뒤 한 번 더 시도합니다.
+      console.warn("저장 재시도:", e && e.code);
+      await new Promise(r => setTimeout(r, 1500));
+      if (e && e.code === "permission-denied") { uid = null; if (!(await connect())) throw e; }
+      await writeOnce(curCopy, student);
+    }
+    $("save-state").textContent = "자동 저장됨"; return true;
+  }).catch((e) => {
+    console.error("저장 실패:", e && e.code, e);
+    $("save-state").textContent = (e && e.code === "permission-denied") ? "저장 권한 오류 · 새로고침 후 다시 시도하거나 기록을 복사하세요" : "저장 실패 · 마칠 때 기록을 복사하세요";
+    return false;
+  });
   return chain;
 }
 
@@ -325,15 +340,29 @@ function resumeSession(id){
   renderLog(); renderPrepChips(); updateMeter(); nextTip(); go(2); $("ask").focus();
 }
 
-/* ---------- 시작 ---------- */
-(async () => {
+/* ---------- 시작 (저장소 연결) ---------- */
+let app = null, auth = null;
+async function connect(){
   try {
-    // 학생용은 교사용과 로그인 상태를 따로 씁니다. (같은 브라우저에서 교사가 로그인·로그아웃해도 학생 저장이 끊기지 않게)
-    const app = initializeApp(firebaseConfig, "student");
-    const auth = getAuth(app);
-    db = getFirestore(app);
-    const user = await new Promise(resolve => { const off = onAuthStateChanged(auth, u => { off(); resolve(u); }); });
+    if (!app) {
+      // 학생용은 교사용과 로그인 상태를 따로 씁니다. (같은 브라우저에서 교사가 로그인·로그아웃해도 학생 저장이 끊기지 않게)
+      app = initializeApp(firebaseConfig, "student");
+      auth = getAuth(app);
+      db = getFirestore(app);
+    }
+    const user = auth.currentUser || await new Promise(resolve => { const off = onAuthStateChanged(auth, u => { off(); resolve(u); }); });
     uid = user ? user.uid : (await signInAnonymously(auth)).user.uid;
+    $("save-off").hidden = true;
+    return true;
+  } catch (e) {
+    console.error("저장소 연결 실패:", e && e.code, e);
+    uid = null; $("save-off").hidden = false;
+    return false;
+  }
+}
+(async () => {
+  if (!(await connect())) return;
+  try {
     const snap = await getDoc(doc(db, "interviews", uid));
     if (snap.exists()) {
       const d = snap.data();
@@ -342,7 +371,5 @@ function resumeSession(id){
       if (stuDoc.student.name) $("stu-name").value = stuDoc.student.name;
     }
     renderResume();
-  } catch (e) {
-    console.error(e); db = null; uid = null; $("save-off").hidden = false;
-  }
+  } catch (e) { console.error("기록 불러오기 실패:", e && e.code, e); }
 })();
